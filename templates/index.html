@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Merger</title>
+</head>
+<body>
+    <h1>Image Merger</h1>
+    <form id="imageForm" enctype="multipart/form-data">
+        <input type="file" name="background" accept="image/png"><br>
+        <input type="file" name="overlay" accept="image/png"><br>
+        <button type="button" onclick="uploadImages()">Merge Images</button>
+    </form>
+
+    <div id="resultImage"></div>
+
+    <script>
+        function uploadImages() {
+            const formData = new FormData(document.getElementById('imageForm'));
+
+            fetch('/merge_images', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Image merging failed with status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Handle the received image data (base64 string)
+                const base64Image = data.image;
+                displayImage(base64Image);
+            })
+            .catch(error => {
+                console.error('Error:', error.message);
+                // Display error message or handle errors here
+            });
+        }
+
+        function displayImage(base64Image) {
+            // Create an image element and set its source to the base64 string
+            const imgElement = document.createElement('img');
+            imgElement.src = 'data:image/png;base64,' + base64Image;
+            
+            // Clear previous image if any
+            const resultDiv = document.getElementById('resultImage');
+            resultDiv.innerHTML = '';
+            
+            // Append the image to the resultImage div
+            resultDiv.appendChild(imgElement);
+        }
+    </script>
+</body>
+</html>
