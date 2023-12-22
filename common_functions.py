@@ -22,13 +22,9 @@ def get_user_details(user_id,db):
 
 def yellow_contour_id(image_data):
         hsv = cv2.cvtColor(image_data, cv2.COLOR_BGR2HSV)
-
-                # Define range for yellow color in HSV
-        lower_yellow = np.array([0, 0, 200])  # Lower bound for yellow
-        upper_yellow = np.array([180, 25, 255])  # Upper bound for yellow
-
- # Upper bound for yellow
-
+        # Define range for yellow color in HSV
+        lower_yellow = np.array([0, 0, 200])  # Lower bound for white
+        upper_yellow = np.array([180, 25, 255])  # Upper bound for white
 
                 # Threshold the HSV image to get only yellow colors
         mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
