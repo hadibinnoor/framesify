@@ -24,11 +24,10 @@ def yellow_contour_id(image_data):
         hsv = cv2.cvtColor(image_data, cv2.COLOR_BGR2HSV)
 
                 # Define range for yellow color in HSV
-                lower_white = np.array([0, 0, 200])  # Lower bound for white
-                upper_white = np.array([180, 255, 255])  # Upper bound for white
+                lower_yellow = np.array([0, 0, 200])  # Lower bound for white
+                upper_yellow = np.array([180, 255, 255])  # Upper bound for white
 
 
- # Upper bound for yellow
 
 
                 # Threshold the HSV image to get only yellow colors
