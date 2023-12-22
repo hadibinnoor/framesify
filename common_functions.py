@@ -1,5 +1,6 @@
-import mimetypes,requests,firebase_admin,base64,cv2,numpy as np
+import mimetypes,requests,firebase_admin,base64,cv2,numpy as np,os,google.cloud.storage
 from flask import request
+from werkzeug.utils import secure_filename
 
 def get_user_details(user_id,db):
         users_ref = db.collection('users').document(user_id)
@@ -23,8 +24,9 @@ def get_user_details(user_id,db):
 def yellow_contour_id(image_data):
         hsv = cv2.cvtColor(image_data, cv2.COLOR_BGR2HSV)
         # Define range for yellow color in HSV
-        lower_yellow = np.array([0, 0, 200])  # Lower bound for white
-        upper_yellow = np.array([180, 25, 255])  # Upper bound for white
+        lower_yellow = np.array([100, 50, 50])
+        upper_yellow = np.array([130, 255, 255])
+ # Upper bound for white
 
                 # Threshold the HSV image to get only yellow colors
         mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
@@ -105,11 +107,20 @@ def image_frame_rendering(user_details):
             # Convert the resulting image to base64
             retval, buffer = cv2.imencode('.jpg', result)
             result_base64 = base64.b64encode(buffer).decode('utf-8')
-            print("success")
             file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
             mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
 
+
         # Prepend the MIME type to the base64 encoded image data
             result_base64_with_mime = f"{mime_type}{result_base64}"
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "key.json"
+            client = google.cloud.storage.Client()
+            bucket = client.get_bucket('framesify.appspot.com')
+
+            # Create a blob and upload the file's content.
+            blob = bucket.blob('images/' + 'processed_image.jpg')
+            blob.upload_from_string(result_base64_with_mime)
+            blob.make_public()
+            firebase_url = blob.public_url
 
             return result_base64_with_mime
