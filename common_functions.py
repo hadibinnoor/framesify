@@ -24,8 +24,11 @@ def yellow_contour_id(image_data):
         hsv = cv2.cvtColor(image_data, cv2.COLOR_BGR2HSV)
 
                 # Define range for yellow color in HSV
-        lower_yellow = np.array([10, 100, 100])
-        upper_yellow = np.array([40, 255, 255])
+                lower_yellow = np.array([0, 0, 200])  # Lower bound for white
+                upper_yellow = np.array([180, 255, 255])  # Upper bound for white
+
+
+
 
                 # Threshold the HSV image to get only yellow colors
         mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
@@ -95,14 +98,14 @@ def image_frame_rendering(user_details):
 
             font = cv2.FONT_HERSHEY_SIMPLEX
             font_scale = 1
-            font_color = (0,0,0)  # White color
+            font_color = (0,0,0)  # yellow color
             line_type = 2
             text_size, _ = cv2.getTextSize(text_data, font, font_scale, line_type)
 
 # Calculate the x-coordinate of the center of the text
             center_x = int(x + (new_w - text_size[0]) / 2)
 
-            cv2.putText(result, text_data, (center_x, int(y + new_h + 30)), font, font_scale, font_color, line_type)
+        #     cv2.putText(result, text_data, (center_x, int(y + new_h + 30)), font, font_scale, font_color, line_type)
             # Convert the resulting image to base64
             retval, buffer = cv2.imencode('.jpg', result)
             result_base64 = base64.b64encode(buffer).decode('utf-8')
