@@ -59,7 +59,7 @@ def image_rendering(user_id):
             'user_id': user_id_fb,
             'image_url': image_url,
         })
-        return jsonify(image_url)
+        return jsonify(image_details['mime_image'])
     else:
     # Handle the error accordingly, e.g., return an error response
             return jsonify({'error': 'Image processing failed'})
