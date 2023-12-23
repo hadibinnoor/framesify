@@ -113,14 +113,5 @@ def image_frame_rendering(user_details):
 
         # Prepend the MIME type to the base64 encoded image data
             result_base64_with_mime = f"{mime_type}{result_base64}"
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "key.json"
-            client = google.cloud.storage.Client()
-            bucket = client.get_bucket('framesify.appspot.com')
-
-            # Create a blob and upload the file's content.
-            blob = bucket.blob('images/' + 'processed_image.jpg')
-            blob.upload_from_string(result_base64_with_mime)
-            blob.make_public()
-            firebase_url = blob.public_url
-
-            return result_base64_with_mime
+            
+            return {'mime_image':result_base64_with_mime,'base64_image':result_base64}

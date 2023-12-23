@@ -1,13 +1,15 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from firebase_admin import credentials, firestore,initialize_app
-
+from firebase_admin import credentials, firestore,initialize_app, storage
 from common_functions import get_user_details,image_frame_rendering
+from werkzeug.utils import secure_filename
+import re,base64,uuid,datetime
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate("key.json")
 initialize_app(cred)
 db = firestore.client()
+bucket = storage.bucket('framesify.appspot.com')
 
 
 app = Flask(__name__)
@@ -34,8 +36,30 @@ def campaign(user_id):
 def image_rendering(user_id):
     user_details=get_user_details(user_id,db)
     if user_details:
-        result_image=image_frame_rendering(user_details)
-        return jsonify(result_image)
+        image_details=image_frame_rendering(user_details)
+        image_data=image_details['base64_image']
+        image_data = re.sub('^data:image/.+;base64,', '', image_data)
+        # Decode the base64 image data
+        image_bytes = base64.b64decode(image_data)
+        user_id_fb = str(uuid.uuid4())
+
+        # Save the image to Firebase Storage
+        filename = f'{user_id_fb}.jpg'  # Adjust the file extension as needed
+        blob = bucket.blob(filename)
+        blob.upload_from_string(image_bytes, content_type='image/jpeg')  # Adjust the MIME type as needed
+
+        # Get the URL of the uploaded image
+        # Set the expiration time for the URL
+        expiration_time = datetime.timedelta(minutes=60)
+        image_url = blob.generate_signed_url(expiration_time)
+
+        # Create a new document in Firestore with the user ID and image URL
+        doc_ref = db.collection(f'users/{user_id}/user_images').document()
+        doc_ref.set({
+            'user_id': user_id_fb,
+            'image_url': image_url,
+        })
+        return jsonify(image_url)
     else:
     # Handle the error accordingly, e.g., return an error response
             return jsonify({'error': 'Image processing failed'})
