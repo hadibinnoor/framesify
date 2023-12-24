@@ -4,7 +4,7 @@ from firebase_admin import credentials, firestore,initialize_app, storage
 from common_functions import get_user_details,image_frame_rendering
 from werkzeug.utils import secure_filename
 import re,base64,uuid,datetime
-# from logging import FileHandler,WARNING
+from logging import FileHandler,WARNING
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate("key.json")
@@ -14,8 +14,8 @@ bucket = storage.bucket('framesify.appspot.com')
 
 
 app = Flask(__name__)
-# file_handler = FileHandler('errorlog.txt')
-# file_handler.setLevel(WARNING)
+file_handler = FileHandler('errorlog.txt')
+file_handler.setLevel(WARNING)
 CORS(app,resources={r"/campaign/*": {"origins": "*"}},methods=['POST'],allow_headers=["Access-Control-Allow-Origin"],origins="*")
 @app.route('/campaign/<user_id>')
 
