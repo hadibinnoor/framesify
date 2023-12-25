@@ -13,23 +13,24 @@ def get_user_details(user_id,db):
                 edit_frame_data = response.content
                 edit_frame_np = np.frombuffer(edit_frame_data, np.uint8)
                 edit_frame = cv2.imdecode(edit_frame_np, cv2.IMREAD_COLOR)
-                contour_details=yellow_contour_id(edit_frame)
+                if 'color_lower_bound' in user_data.keys() and 'color_upper_bound' in user_data.keys():
+                      color_lower_bound=user_data['color_lower_bound']
+                      color_upper_bound=user_data['color_upper_bound']
+                else:
+                      color_lower_bound=[100,50,50]
+                      color_upper_bound=[130,255,255]
+                contour_details=contour_id(edit_frame,color_lower_bound,color_upper_bound)
                 client_title=user_data['user_title']
-
                 return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame}
 
-
-
-
-def yellow_contour_id(image_data):
+def contour_id(image_data,color_lower_bound,color_upper_bound):
         hsv = cv2.cvtColor(image_data, cv2.COLOR_BGR2HSV)
-        # Define range for yellow color in HSV
-        lower_yellow = np.array([100, 50, 50])
-        upper_yellow = np.array([130, 255, 255])
- # Upper bound for white
+        # Define range for color in HSV
+        lower_bound = np.array(color_lower_bound)
+        upper_bound = np.array(color_upper_bound)
 
                 # Threshold the HSV image to get only yellow colors
-        mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
                 # Find contours in the mask image
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
