@@ -2,9 +2,8 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from firebase_admin import credentials, firestore,initialize_app, storage
 from common_functions import get_user_details,image_frame_rendering
-from werkzeug.utils import secure_filename
 import re,base64,uuid,datetime
-from logging import FileHandler,WARNING
+
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate("key.json")
@@ -14,8 +13,6 @@ bucket = storage.bucket('framesify.appspot.com')
 
 
 app = Flask(__name__)
-file_handler = FileHandler('errorlog.txt')
-file_handler.setLevel(WARNING)
 CORS(app,resources={r"/campaign/*": {"origins": "*"}},methods=['POST'],allow_headers=["Access-Control-Allow-Origin"],origins="*")
 @app.route('/campaign/<user_id>')
 
@@ -25,12 +22,14 @@ def campaign(user_id):
         display_frame_url=user_details['display_frame_url']
         client_title=user_details['client_title']
         aspect_ratio_yellow=user_details['contour_details']['aspect_ratio_yellow']
+        text_field=user_details['text']
 
         return jsonify({
                 "user_id": user_id,
                 "frame_image": display_frame_url,
                 "client_title": client_title,
-                "aspect_ratio":aspect_ratio_yellow
+                "aspect_ratio":aspect_ratio_yellow,
+                "text_field":text_field
             })
     return jsonify(frame_image="Error")
     
@@ -67,4 +66,4 @@ def image_rendering(user_id):
     # Handle the error accordingly, e.g., return an error response
             return jsonify({'error': 'Image processing failed'})
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

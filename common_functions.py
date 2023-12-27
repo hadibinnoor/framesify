@@ -1,6 +1,5 @@
-import mimetypes,requests,firebase_admin,base64,cv2,numpy as np,os,google.cloud.storage
+import mimetypes,requests,base64,cv2,numpy as np
 from flask import request
-from werkzeug.utils import secure_filename
 
 def get_user_details(user_id,db):
         users_ref = db.collection('users').document(user_id)
@@ -19,9 +18,12 @@ def get_user_details(user_id,db):
                 else:
                       color_lower_bound=[100,50,50]
                       color_upper_bound=[130,255,255]
+                text_field=False
+                if 'text_field' in user_data.keys():
+                      text_field=True
                 contour_details=contour_id(edit_frame,color_lower_bound,color_upper_bound)
                 client_title=user_data['user_title']
-                return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame}
+                return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame,'text':text_field}
 
 def contour_id(image_data,color_lower_bound,color_upper_bound):
         hsv = cv2.cvtColor(image_data, cv2.COLOR_BGR2HSV)
@@ -54,6 +56,7 @@ def contour_id(image_data,color_lower_bound,color_upper_bound):
 def image_frame_rendering(user_details):
         edit_frame=user_details['edit_frame']
         contour_details=user_details['contour_details']
+        text_field=user_details['text']
         aspect_ratio_yellow=contour_details['aspect_ratio_yellow']
         x=contour_details['x']
         y=contour_details['y']
@@ -94,17 +97,26 @@ def image_frame_rendering(user_details):
 
                 # Combine the new image with the frame_image
             result = cv2.add(poster_mask, new_image_mask)
+            if text_field:
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                font_scale = 1.5
+                font_color = (255,255,255)  # yellow color
+                line_type = 2
+                text_size, _ = cv2.getTextSize(text_data, font, font_scale, line_type)
 
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 1
-            font_color = (0,0,0)  # yellow color
-            line_type = 2
-            text_size, _ = cv2.getTextSize(text_data, font, font_scale, line_type)
+    # Calculate the x-coordinate of the center of the text
+                center_x = int(x + (new_w - text_size[0]) / 2)
 
-# Calculate the x-coordinate of the center of the text
-            center_x = int(x + (new_w - text_size[0]) / 2)
+                # Calculate the x-coordinate of the right side of the text
+                right_x = int(x + new_w-420)
 
-        #     cv2.putText(result, text_data, (center_x, int(y + new_h + 30)), font, font_scale, font_color, line_type)
+                # Calculate the y-coordinate of the center of the text
+                center_y = int(y + new_h / 2+325)
+
+                # Position where you want to start text (x, y coordinate)
+                text_position = (center_x, center_y)
+
+                cv2.putText(result, text_data, text_position, font, font_scale, font_color,2, line_type)
             # Convert the resulting image to base64
             retval, buffer = cv2.imencode('.jpg', result)
             result_base64 = base64.b64encode(buffer).decode('utf-8')
