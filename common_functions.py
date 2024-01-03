@@ -116,7 +116,7 @@ def image_frame_rendering(user_details):
                 # Position where you want to start text (x, y coordinate)
                 text_position = (center_x, center_y)
 
-                cv2.putText(result, text_data, text_position, font, font_scale, font_color,2, line_type)
+                cv2.putText(result, text_data, text_position, font, font_scale, font_color,3, line_type)
             # Convert the resulting image to base64
             retval, buffer = cv2.imencode('.jpg', result)
             result_base64 = base64.b64encode(buffer).decode('utf-8')
