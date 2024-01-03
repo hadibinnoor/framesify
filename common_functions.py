@@ -111,7 +111,7 @@ def image_frame_rendering(user_details):
                 right_x = int(x + new_w-420)
 
                 # Calculate the y-coordinate of the center of the text
-                center_y = int(y + new_h / 2+325)
+                center_y = int(y + new_h / 2+250)
 
                 # Position where you want to start text (x, y coordinate)
                 text_position = (center_x, center_y)
