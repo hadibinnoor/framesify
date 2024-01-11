@@ -18,9 +18,9 @@ def get_user_details(user_id,db):
                 else:
                       color_lower_bound=[100,50,50]
                       color_upper_bound=[130,255,255]
-                text_field=False
+                text_field=None
                 if 'text_field' in user_data.keys():
-                      text_field=True
+                      text_field=user_data['text_field']
                 contour_details=contour_id(edit_frame,color_lower_bound,color_upper_bound)
                 client_title=user_data['user_title']
                 return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame,'text':text_field}
@@ -99,19 +99,19 @@ def image_frame_rendering(user_details):
             result = cv2.add(poster_mask, new_image_mask)
             if text_field:
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 1.5
-                font_color = (255,255,255)  # yellow color
+                font_scale = 1.2
+                font_color = (0,0,255)  # yellow color
                 line_type = 2
                 text_size, _ = cv2.getTextSize(text_data, font, font_scale, line_type)
 
     # Calculate the x-coordinate of the center of the text
-                center_x = int(x + (new_w - text_size[0]) / 2)
+                center_x = int(x + (new_w - text_size[0]) / 2 + 45)
 
                 # Calculate the x-coordinate of the right side of the text
-                right_x = int(x + new_w-420)
+                right_x = int(x + new_w)
 
                 # Calculate the y-coordinate of the center of the text
-                center_y = int(y + new_h / 2+250)
+                center_y = int(y + new_h/2 - 343)
 
                 # Position where you want to start text (x, y coordinate)
                 text_position = (center_x, center_y)
