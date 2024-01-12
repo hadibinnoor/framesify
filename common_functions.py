@@ -1,5 +1,6 @@
 import mimetypes,requests,base64,cv2,numpy as np
 from flask import request
+from PIL import ImageDraw,Image
 
 def get_user_details(user_id,db):
         users_ref = db.collection('users').document(user_id)
@@ -64,6 +65,12 @@ def image_frame_rendering(user_details):
         w=contour_details['w']
         contour_mask=contour_details['contour_mask']
         text_data = (request.form.get('textData'))
+        parts = text_data.split(',')
+
+# Create an array and append the parts
+        text_values = []
+        text_values.extend(parts)
+        print(text_values)
         cropped_image_base64 = request.files.get('croppedImage')
         if cropped_image_base64:
             cropped_image_data=cropped_image_base64.read()
@@ -98,25 +105,46 @@ def image_frame_rendering(user_details):
                 # Combine the new image with the frame_image
             result = cv2.add(poster_mask, new_image_mask)
             if text_field:
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 1.2
-                font_color = (0,0,255)  # yellow color
+                font = cv2.FONT_HERSHEY_DUPLEX
+                font_scale = 1.3
+                font_color = (0,0,0)  # yellow color
                 line_type = 2
                 text_size, _ = cv2.getTextSize(text_data, font, font_scale, line_type)
 
     # Calculate the x-coordinate of the center of the text
-                center_x = int(x + (new_w - text_size[0]) / 2 + 45)
+ # Calculate the x-coordinate of the center of the text
+                # ... (previous code remains unchanged)
 
-                # Calculate the x-coordinate of the right side of the text
-                right_x = int(x + new_w)
+# Calculate the x-coordinate of the center of the text
+            center_x = int(x + new_w / 2 + 520)
 
-                # Calculate the y-coordinate of the center of the text
-                center_y = int(y + new_h/2 - 343)
+            # Calculate the y-coordinate of the center of the text
+            center_y = int(y + new_h / 2)
 
-                # Position where you want to start text (x, y coordinate)
-                text_position = (center_x, center_y)
+            # Calculate the x-coordinate of the starting point for each text
+            text_size_1, _ = cv2.getTextSize(text_values[0], font, font_scale, line_type)
+            text_start_x_1 = center_x - int(text_size_1[0] / 2)
 
-                cv2.putText(result, text_data, text_position, font, font_scale, font_color,3, line_type)
+            text_size_2, _ = cv2.getTextSize(text_values[1], font, font_scale, line_type)
+            text_start_x_2 = center_x - int(text_size_2[0] / 2)
+
+            # Calculate the starting points for the text based on the center
+            text_position_1 = (text_start_x_1-95, center_y - 15)
+            text_position_2 = (text_start_x_2-95, center_y + 95)
+        #     img_pil = Image.fromarray(result)
+        #     draw = ImageDraw.Draw(img_pil)
+        #     draw.text(text_position_1, text_values[0], font=font, fill=(255, 255, 255))
+        #     draw.text(text_position_2, text_values[1], font=font, fill=(0, 0, 0))
+
+        # # Convert the resulting image to NumPy array
+        #     result = np.array(img_pil)
+          
+            cv2.putText(result, text_values[0], text_position_1, font, font_scale, font_color, 2, line_type)
+            cv2.putText(result, text_values[1], text_position_2, font, font_scale, font_color, 2, line_type)
+
+# ... (remaining code remains unchanged)
+
+                
             # Convert the resulting image to base64
             retval, buffer = cv2.imencode('.jpg', result)
             result_base64 = base64.b64encode(buffer).decode('utf-8')
