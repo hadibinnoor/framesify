@@ -1,6 +1,5 @@
 import mimetypes,requests,base64,cv2,numpy as np
 from flask import request
-from PIL import ImageDraw,Image
 
 def get_user_details(user_id,db):
         users_ref = db.collection('users').document(user_id)
