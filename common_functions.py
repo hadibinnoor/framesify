@@ -115,31 +115,23 @@ def image_frame_rendering(user_details):
                 # ... (previous code remains unchanged)
 
 # Calculate the x-coordinate of the center of the text
-            center_x = int(x + new_w / 2 + 520)
+                center_x = int(x + new_w / 2 + 520)
 
-            # Calculate the y-coordinate of the center of the text
-            center_y = int(y + new_h / 2)
+                # Calculate the y-coordinate of the center of the text
+                center_y = int(y + new_h / 2)
 
-            # Calculate the x-coordinate of the starting point for each text
-            text_size_1, _ = cv2.getTextSize(text_values[0], font, font_scale, line_type)
-            text_start_x_1 = center_x - int(text_size_1[0] / 2)
+                # Calculate the x-coordinate of the starting point for each text
+                text_size_1, _ = cv2.getTextSize(text_values[0], font, font_scale, line_type)
+                text_start_x_1 = center_x - int(text_size_1[0] / 2)
 
-            text_size_2, _ = cv2.getTextSize(text_values[1], font, font_scale, line_type)
-            text_start_x_2 = center_x - int(text_size_2[0] / 2)
+                text_size_2, _ = cv2.getTextSize(text_values[1], font, font_scale, line_type)
+                text_start_x_2 = center_x - int(text_size_2[0] / 2)
 
-            # Calculate the starting points for the text based on the center
-            text_position_1 = (text_start_x_1-95, center_y - 15)
-            text_position_2 = (text_start_x_2-95, center_y + 95)
-        #     img_pil = Image.fromarray(result)
-        #     draw = ImageDraw.Draw(img_pil)
-        #     draw.text(text_position_1, text_values[0], font=font, fill=(255, 255, 255))
-        #     draw.text(text_position_2, text_values[1], font=font, fill=(0, 0, 0))
-
-        # # Convert the resulting image to NumPy array
-        #     result = np.array(img_pil)
-          
-            cv2.putText(result, text_values[0], text_position_1, font, font_scale, font_color, 2, line_type)
-            cv2.putText(result, text_values[1], text_position_2, font, font_scale, font_color, 2, line_type)
+                # Calculate the starting points for the text based on the center
+                text_position_1 = (text_start_x_1-95, center_y - 15)
+                text_position_2 = (text_start_x_2-95, center_y + 95)
+                cv2.putText(result, text_values[0], text_position_1, font, font_scale, font_color, 2, line_type)
+                cv2.putText(result, text_values[1], text_position_2, font, font_scale, font_color, 2, line_type)
 
 # ... (remaining code remains unchanged)
 
