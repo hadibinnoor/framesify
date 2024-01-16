@@ -65,12 +65,14 @@ def image_frame_rendering(user_details):
         contour_mask=contour_details['contour_mask']
         text_data = (request.form.get('textData'))
         if text_data!=None:
-            parts = text_data.split(',')
+         if len(text_field)>=2:
+                parts = text_data.split(',')
 
-    # Create an array and append the parts
-            text_values = []
-            text_values.extend(parts)
-            print(text_values)
+        # Create an array and append the parts
+                text_values = []
+                text_values.extend(parts)
+         else:
+              text_values=[text_data]
         cropped_image_base64 = request.files.get('croppedImage')
         if cropped_image_base64:
             cropped_image_data=cropped_image_base64.read()
