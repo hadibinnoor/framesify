@@ -3,7 +3,7 @@ from flask_cors import CORS
 from firebase_admin import credentials, firestore,initialize_app, storage
 from common_functions import get_user_details,image_frame_rendering
 import re,base64,uuid,datetime
-import qrcode
+
 
 
 # Initialize Firebase Admin SDK
