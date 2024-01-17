@@ -3,8 +3,8 @@ from flask_cors import CORS
 from firebase_admin import credentials, firestore,initialize_app, storage
 from common_functions import get_user_details,image_frame_rendering
 import re,base64,uuid,datetime
-
-
+import qrcode
+from io import BytesIO
 
 # Initialize Firebase Admin SDK
 cred = credentials.Certificate("key.json")
@@ -56,14 +56,31 @@ def image_rendering(user_id):
         expiration_time = datetime.timedelta(minutes=60)
         image_url = blob.generate_signed_url(expiration_time)
 
+        qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+        )
+        qr.add_data(image_url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        qr_img.save(buffer, format="PNG")
+        image_data = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        mime_type="data:image/png;base64,"
+        qr_code=f'{mime_type}{image_data}'
         # Create a new document in Firestore with the user ID and image URL
         doc_ref = db.collection(f'users/{user_id}/user_images').document()
         doc_ref.set({
             'user_id': user_id_fb,
             'image_url': image_url,
         })
-
-        return jsonify(image_details['mime_image'])
+        if user_id=="P6hGi":
+            return jsonify(qr_code)
+        else:
+             return jsonify(image_details['mime_image'])
+   
     else:
     # Handle the error accordingly, e.g., return an error response
             return jsonify({'error': 'Image processing failed'})
@@ -97,14 +114,21 @@ def image_rendering(user_id):
 #         qr.add_data(image_url)
 #         qr.make(fit=True)
 #         qr_img = qr.make_image(fill_color="black", back_color="white")
+#         buffer = BytesIO()
+#         qr_img.save(buffer, format="PNG")
+#         image_data = base64.b64encode(buffer.getvalue()).decode("utf-8")
+#         mime_type="data:image/png;base64,"
+#         qr_code=f'{mime_type}{image_data}'
 #         # Create a new document in Firestore with the user ID and image URL
 #         doc_ref = db.collection(f'users/{user_id}/user_images').document()
 #         doc_ref.set({
 #             'user_id': user_id_fb,
 #             'image_url': image_url,
 #         })
-
-#         return jsonify(qr_img)
+#         if user_id=="P6hGi":
+#             return jsonify(qr_code)
+#         else:
+#              return jsonify(image_details['mime_image'])
 #     else:
 #     # Handle the error accordingly, e.g., return an error response
 #             return jsonify({'error': 'Image processing failed'})
