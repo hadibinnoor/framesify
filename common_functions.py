@@ -148,5 +148,6 @@ def image_frame_rendering(user_details):
 
         # Prepend the MIME type to the base64 encoded image data
             result_base64_with_mime = f"{mime_type}{result_base64}"
+            print(result_base64_with_mime[:30])
             
             return {'mime_image':result_base64_with_mime,'base64_image':result_base64}
