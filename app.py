@@ -65,7 +65,7 @@ def testimonial(user_id):
 def testimonial_generation(user_id):
     user_details=get_user_details(user_id,db)
     if user_details:
-        image_details=testimonial_rendering(user_details,(0,0,150),(180,30,220))
+        image_details=testimonial_rendering(user_details)
         image_data=image_details['base64_image']
         image_data = re.sub('^data:image/.+;base64,', '', image_data)
         # Decode the base64 image data

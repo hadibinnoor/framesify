@@ -1,5 +1,6 @@
 import mimetypes,requests,base64,cv2,numpy as np
 from flask import request,jsonify
+import textwrap
 
 def page_rendering(user_id,db):
       user_details=get_user_details(user_id,db)
@@ -181,7 +182,7 @@ def image_frame_rendering(user_details):
         return {'mime_image':result_base64_with_mime,'base64_image':result_base64}
 
 
-def testimonial_rendering(user_details, text_area_color_lower_bound, text_area_color_upper_bound):
+def testimonial_rendering(user_details):
     placing_details = image_placing(user_details)
     contour_details = user_details['contour_details']
     x = contour_details['x']
@@ -195,42 +196,53 @@ def testimonial_rendering(user_details, text_area_color_lower_bound, text_area_c
     text_values = text_data.split(',')
 
     # Convert the result image to HSV color space
-    hsv_result = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
+#     hsv_result = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
 
     # Define range for color in HSV for the text area
-    text_area_lower_bound = np.array(text_area_color_lower_bound)
-    text_area_upper_bound = np.array(text_area_color_upper_bound)
+#     text_area_lower_bound = np.array(text_area_color_lower_bound)
+#     text_area_upper_bound = np.array(text_area_color_upper_bound)
 
-    # Threshold the HSV image to get only the text area color
-    text_area_mask = cv2.inRange(hsv_result, text_area_lower_bound, text_area_upper_bound)
+#     # Threshold the HSV image to get only the text area color
+#     text_area_mask = cv2.inRange(hsv_result, text_area_lower_bound, text_area_upper_bound)
 
-    # Find contours in the text area mask
-    text_area_contours, _ = cv2.findContours(text_area_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+#     # Find contours in the text area mask
+#     text_area_contours, _ = cv2.findContours(text_area_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Assuming the text area is the largest colored region, find the largest contour
-    text_area_contour = max(text_area_contours, key=cv2.contourArea)
+#     # Assuming the text area is the largest colored region, find the largest contour
+#     text_area_contour = max(text_area_contours, key=cv2.contourArea)
 
-    # Get the bounding rectangle for the text area
-    text_area_x, text_area_y, text_area_w, text_area_h = cv2.boundingRect(text_area_contour)
+#     # Get the bounding rectangle for the text area
+#     text_area_x, text_area_y, text_area_w, text_area_h = cv2.boundingRect(text_area_contour)
 
-    font = cv2.FONT_HERSHEY_DUPLEX
-    font_scale = 1.3
-    font_color = (0, 0, 0)  # yellow color
-    line_type = 2
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 3.2
+    font_color = (255,255,255) 
+    line_type = cv2.LINE_AA
+    wrapped_text=textwrap.wrap(text_values[1],width=55)
+    for i,line in enumerate(wrapped_text):
+          text_size_n=cv2.getTextSize(line,font,6,2)
+          gap=text_size_n[1]+40
+          y=(1500+i*gap)+130
+        #   x=int((result.shape[1]-text_size_n[0])/2)
+          cv2.putText(result, line, (310,y), font, font_scale, font_color, 4, line_type)
+    
 
+        #   x=int((result.shape[1]-text_size_n[0])/2)
+          
+    cv2.putText(result,text_values[0],(2200,2480),font,font_scale,font_color,3,line_type)
     # Calculate the x-coordinate of the center of the text area
-    text_area_center_x = int(text_area_x + text_area_w / 2)
+#     text_area_center_x = int(text_area_x + text_area_w / 2)
 
-    # Calculate the y-coordinate of the center of the text area
-    text_area_center_y = int(text_area_y + text_area_h / 2)
+#     # Calculate the y-coordinate of the center of the text area
+#     text_area_center_y = int(text_area_y + text_area_h / 2)
 
-    # Calculate the starting points for the text based on the center of the text area
-    text_size, _ = cv2.getTextSize(text_values[1], font, font_scale, line_type)
-    text_start_x = text_area_center_x - int(text_size[0] / 2)
-    text_position = (text_start_x, text_area_center_y)
+#     # Calculate the starting points for the text based on the center of the text area
+#     text_size, _ = cv2.getTextSize(text_values[1], font, font_scale, line_type)
+#     text_start_x = text_area_center_x - int(text_size[0] / 2)
+#     text_position = (text_start_x, text_area_center_y)
 
-    # Draw the text on the result image within the identified text area
-    cv2.putText(result, text_values[1], text_position, font, font_scale, font_color, 2, line_type)
+#     # Draw the text on the result image within the identified text area
+#     cv2.putText(result, text_values[1], text_position, font, font_scale, font_color, 2, line_type)
 
     # Convert the resulting image to base64
     retval, buffer = cv2.imencode('.jpg', result)
