@@ -1,6 +1,24 @@
 import mimetypes,requests,base64,cv2,numpy as np
-from flask import request
+from flask import request,jsonify
 
+def page_rendering(user_id,db):
+      user_details=get_user_details(user_id,db)
+      if user_details:
+        display_frame_url=user_details['display_frame_url']
+        client_title=user_details['client_title']
+        aspect_ratio_yellow=user_details['contour_details']['aspect_ratio_yellow']
+        text_field=user_details['text']
+
+        return jsonify({
+                "user_id": user_id,
+                "frame_image": display_frame_url,
+                "client_title": client_title,
+                "aspect_ratio":aspect_ratio_yellow,
+                "text_field":text_field
+            })
+      else:
+        return jsonify(frame_image="Error")
+     
 def get_user_details(user_id,db):
         users_ref = db.collection('users').document(user_id)
         user = users_ref.get()
@@ -8,7 +26,7 @@ def get_user_details(user_id,db):
                 user_data = user.to_dict()
                 display_frame_url=user_data['display_frame']
                 edit_frame_url=user_data['edit_frame']
-                response = requests.get(edit_frame_url)
+                response = requests.get(edit_frame_url) 
                 edit_frame_data = response.content
                 edit_frame_np = np.frombuffer(edit_frame_data, np.uint8)
                 edit_frame = cv2.imdecode(edit_frame_np, cv2.IMREAD_COLOR)
@@ -52,27 +70,15 @@ def contour_id(image_data,color_lower_bound,color_upper_bound):
         aspect_ratio_yellow = w / h
         
         return {'x':x,'y':y,'w':w,'h':h,'aspect_ratio_yellow':aspect_ratio_yellow,'contour_mask':contour_mask}
-
-def image_frame_rendering(user_details):
+def image_placing(user_details):
         edit_frame=user_details['edit_frame']
         contour_details=user_details['contour_details']
-        text_field=user_details['text']
         aspect_ratio_yellow=contour_details['aspect_ratio_yellow']
         x=contour_details['x']
         y=contour_details['y']
         h=contour_details['h']
         w=contour_details['w']
         contour_mask=contour_details['contour_mask']
-        text_data = (request.form.get('textData'))
-        if text_data!=None:
-         if len(text_field)>=2:
-                parts = text_data.split(',')
-
-        # Create an array and append the parts
-                text_values = []
-                text_values.extend(parts)
-         else:
-              text_values=[text_data]
         cropped_image_base64 = request.files.get('croppedImage')
         if cropped_image_base64:
             cropped_image_data=cropped_image_base64.read()
@@ -106,7 +112,29 @@ def image_frame_rendering(user_details):
 
                 # Combine the new image with the frame_image
             result = cv2.add(poster_mask, new_image_mask)
-            if text_field:
+
+            return {'new_w':new_w,'new_h':new_h,'result':result}
+
+def image_frame_rendering(user_details):
+        placing_details=image_placing(user_details)
+        text_field=user_details['text']
+        contour_details=user_details['contour_details']
+        x=contour_details['x']
+        y=contour_details['y']
+        new_w=placing_details['new_w']
+        new_h=placing_details['new_h']
+        result=placing_details['result']
+        text_data = (request.form.get('textData'))
+        if text_data!=None:
+         if len(text_field)>=2:
+                parts = text_data.split(',')
+
+        # Create an array and append the parts
+                text_values = []
+                text_values.extend(parts)
+         else:
+              text_values=[text_data]
+        if text_field:
                 font = cv2.FONT_HERSHEY_DUPLEX
                 font_scale = 1.3
                 font_color = (0,0,0)  # yellow color
@@ -140,14 +168,79 @@ def image_frame_rendering(user_details):
 
                 
             # Convert the resulting image to base64
-            retval, buffer = cv2.imencode('.jpg', result)
-            result_base64 = base64.b64encode(buffer).decode('utf-8')
-            file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
-            mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
+        retval, buffer = cv2.imencode('.jpg', result)
+        result_base64 = base64.b64encode(buffer).decode('utf-8')
+        file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
+        mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
 
 
         # Prepend the MIME type to the base64 encoded image data
-            result_base64_with_mime = f"{mime_type}{result_base64}"
-            print(result_base64_with_mime[:30])
+        result_base64_with_mime = f"{mime_type}{result_base64}"
+        print(result_base64_with_mime[:30])
             
-            return {'mime_image':result_base64_with_mime,'base64_image':result_base64}
+        return {'mime_image':result_base64_with_mime,'base64_image':result_base64}
+
+
+def testimonial_rendering(user_details, text_area_color_lower_bound, text_area_color_upper_bound):
+    placing_details = image_placing(user_details)
+    contour_details = user_details['contour_details']
+    x = contour_details['x']
+    y = contour_details['y']
+    new_w = placing_details['new_w']
+    new_h = placing_details['new_h']
+    result = placing_details['result']
+    text_data = request.form.get('textData')
+
+    # Create an array and append the parts
+    text_values = text_data.split(',')
+
+    # Convert the result image to HSV color space
+    hsv_result = cv2.cvtColor(result, cv2.COLOR_BGR2HSV)
+
+    # Define range for color in HSV for the text area
+    text_area_lower_bound = np.array(text_area_color_lower_bound)
+    text_area_upper_bound = np.array(text_area_color_upper_bound)
+
+    # Threshold the HSV image to get only the text area color
+    text_area_mask = cv2.inRange(hsv_result, text_area_lower_bound, text_area_upper_bound)
+
+    # Find contours in the text area mask
+    text_area_contours, _ = cv2.findContours(text_area_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Assuming the text area is the largest colored region, find the largest contour
+    text_area_contour = max(text_area_contours, key=cv2.contourArea)
+
+    # Get the bounding rectangle for the text area
+    text_area_x, text_area_y, text_area_w, text_area_h = cv2.boundingRect(text_area_contour)
+
+    font = cv2.FONT_HERSHEY_DUPLEX
+    font_scale = 1.3
+    font_color = (0, 0, 0)  # yellow color
+    line_type = 2
+
+    # Calculate the x-coordinate of the center of the text area
+    text_area_center_x = int(text_area_x + text_area_w / 2)
+
+    # Calculate the y-coordinate of the center of the text area
+    text_area_center_y = int(text_area_y + text_area_h / 2)
+
+    # Calculate the starting points for the text based on the center of the text area
+    text_size, _ = cv2.getTextSize(text_values[1], font, font_scale, line_type)
+    text_start_x = text_area_center_x - int(text_size[0] / 2)
+    text_position = (text_start_x, text_area_center_y)
+
+    # Draw the text on the result image within the identified text area
+    cv2.putText(result, text_values[1], text_position, font, font_scale, font_color, 2, line_type)
+
+    # Convert the resulting image to base64
+    retval, buffer = cv2.imencode('.jpg', result)
+    result_base64 = base64.b64encode(buffer).decode('utf-8')
+    file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
+    mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
+
+    # Prepend the MIME type to the base64 encoded image data
+    result_base64_with_mime = f"{mime_type}{result_base64}"
+    print(result_base64_with_mime[:30])
+
+    return {'mime_image': result_base64_with_mime, 'base64_image': result_base64}
+

@@ -1,10 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from firebase_admin import credentials, firestore,initialize_app, storage
-from common_functions import get_user_details,image_frame_rendering
+from common_functions import get_user_details,image_frame_rendering,page_rendering,image_placing,testimonial_rendering
 import re,base64,uuid,datetime
-import qrcode
-from io import BytesIO
 
 
 # Initialize Firebase Admin SDK
@@ -15,25 +13,11 @@ bucket = storage.bucket('framesify.appspot.com')
 
 
 app = Flask(__name__)
-CORS(app,resources={r"/campaign/*": {"origins": "*"}},methods=['POST'],allow_headers=["Access-Control-Allow-Origin"],origins="*")
+CORS(app,resources={r"/campaign/*": {"origins": "*"},r"/testimonial/*": {"origins": "*"}},methods=['POST'],allow_headers=["Access-Control-Allow-Origin"],origins="*")
 @app.route('/campaign/<user_id>')
 
 def campaign(user_id):
-    user_details=get_user_details(user_id,db)
-    if user_details:
-        display_frame_url=user_details['display_frame_url']
-        client_title=user_details['client_title']
-        aspect_ratio_yellow=user_details['contour_details']['aspect_ratio_yellow']
-        text_field=user_details['text']
-
-        return jsonify({
-                "user_id": user_id,
-                "frame_image": display_frame_url,
-                "client_title": client_title,
-                "aspect_ratio":aspect_ratio_yellow,
-                "text_field":text_field
-            })
-    return jsonify(frame_image="Error")
+    return page_rendering(user_id,db)
     
 @app.route('/campaign/<string:user_id>/download',methods=['POST'])
 
@@ -57,81 +41,62 @@ def image_rendering(user_id):
         expiration_time = datetime.timedelta(minutes=60)
         image_url = blob.generate_signed_url(expiration_time)
 
-        # qr = qrcode.QRCode(
-        # version=1,
-        # error_correction=qrcode.constants.ERROR_CORRECT_L,
-        # box_size=10,
-        # border=4,
-        # )
-        # qr.add_data(image_url)
-        # qr.make(fit=True)
-        # qr_img = qr.make_image(fill_color="black", back_color="white")
-        # buffer = BytesIO()
-        # qr_img.save(buffer, format="PNG")
-        # image_data = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        # mime_type="data:image/png;base64,"
-        # qr_code=f'{mime_type}{image_data}'
-
+        
         # Create a new document in Firestore with the user ID and image URL
         doc_ref = db.collection(f'users/{user_id}/user_images').document()
         doc_ref.set({
             'user_id': user_id_fb,
             'image_url': image_url,
         })
-        # if user_id=="P6hGi":
-        #     return jsonify(qr_code)
-        # else:
-        return jsonify(image_details['mime_image'])
+        if user_id=="P6hGi":
+            return jsonify(image_url)
+        else:
+            return jsonify(image_details['mime_image'])
+   
     else:
     # Handle the error accordingly, e.g., return an error response
         return jsonify({'error': 'Image processing failed'})
 
-# @app.route('/campaign/<string:user_id>/qr',methods=['POST'])
-# def qr_code_generation(user_id):
-#     user_details=get_user_details(user_id,db)
-#     if user_details:
-#         image_details=image_frame_rendering(user_details)
-#         image_data=image_details['base64_image']
-#         image_data = re.sub('^data:image/.+;base64,', '', image_data)
-#         # Decode the base64 image data
-#         image_bytes = base64.b64decode(image_data)
-#         user_id_fb = str(uuid.uuid4())
+@app.route('/testimonial/<string:user_id>',methods=['GET','POST'])
+def testimonial(user_id):
+    return page_rendering(user_id,db)
 
-#         # Save the image to Firebase Storage
-#         filename = f'{user_id_fb}.jpg'  # Adjust the file extension as needed
-#         blob = bucket.blob(filename)
-#         blob.upload_from_string(image_bytes, content_type='image/jpeg')  # Adjust the MIME type as needed
+@app.route('/testimonial/<string:user_id>/download', methods=['POST'])
+def testimonial_generation(user_id):
+    user_details=get_user_details(user_id,db)
+    if user_details:
+        image_details=testimonial_rendering(user_details,(0,0,150),(180,30,220))
+        image_data=image_details['base64_image']
+        image_data = re.sub('^data:image/.+;base64,', '', image_data)
+        # Decode the base64 image data
+        image_bytes = base64.b64decode(image_data)
+        user_id_fb = str(uuid.uuid4())
 
-#         # Get the URL of the uploaded image
-#         # Set the expiration time for the URL
-#         expiration_time = datetime.timedelta(minutes=60)
-#         image_url = blob.generate_signed_url(expiration_time)
-#         qr = qrcode.QRCode(
-#         version=1,
-#         error_correction=qrcode.constants.ERROR_CORRECT_L,
-#         box_size=10,
-#         border=4,
-#         )
-#         qr.add_data(image_url)
-#         qr.make(fit=True)
-#         qr_img = qr.make_image(fill_color="black", back_color="white")
-#         buffer = BytesIO()
-#         qr_img.save(buffer, format="PNG")
-#         image_data = base64.b64encode(buffer.getvalue()).decode("utf-8")
-#         mime_type="data:image/png;base64,"
-#         qr_code=f'{mime_type}{image_data}'
+        # Save the image to Firebase Storage
+        filename = f'{user_id_fb}.jpg'  # Adjust the file extension as needed
+        blob = bucket.blob(filename)
+        blob.upload_from_string(image_bytes, content_type='image/jpeg')  # Adjust the MIME type as needed
 
-#         # Create a new document in Firestore with the user ID and image URL
-#         doc_ref = db.collection(f'users/{user_id}/user_images').document()
-#         doc_ref.set({
-#             'user_id': user_id_fb,
-#             'image_url': image_url,
-#         })
+        # Get the URL of the uploaded image
+        # Set the expiration time for the URL
+        expiration_time = datetime.timedelta(minutes=60)
+        image_url = blob.generate_signed_url(expiration_time)
 
-#         return jsonify({'qr_image_url': qr_code})
-#     else:
-#     # Handle the error accordingly, e.g., return an error response
-#             return jsonify({'error': 'Image processing failed'})
+        
+        # Create a new document in Firestore with the user ID and image URL
+        doc_ref = db.collection(f'users/{user_id}/user_images').document()
+        doc_ref.set({
+            'user_id': user_id_fb,
+            'image_url': image_url,
+        })
+        if user_id=="P6hGi":
+            return jsonify(image_url)
+        else:
+            return jsonify(image_details['mime_image'])
+   
+    else:
+    # Handle the error accordingly, e.g., return an error response
+        return jsonify({'error': 'Image processing failed'})    
 
 if __name__ == '__main__':
     app.run(debug=True)
