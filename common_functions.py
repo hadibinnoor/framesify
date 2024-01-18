@@ -186,7 +186,7 @@ def testimonial_rendering(user_details):
     placing_details = image_placing(user_details)
     contour_details = user_details['contour_details']
     x = contour_details['x']
-    y = contour_details['y']
+    yy = contour_details['y']
     new_w = placing_details['new_w']
     new_h = placing_details['new_h']
     result = placing_details['result']
@@ -229,7 +229,7 @@ def testimonial_rendering(user_details):
 
         #   x=int((result.shape[1]-text_size_n[0])/2)
           
-    cv2.putText(result,text_values[0],(2200,2480),font,font_scale,font_color,3,line_type)
+    cv2.putText(result,text_values[0],(x+2000,yy+2400),font,font_scale,(0,0,0),3,line_type)
     # Calculate the x-coordinate of the center of the text area
 #     text_area_center_x = int(text_area_x + text_area_w / 2)
 
