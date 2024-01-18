@@ -218,6 +218,11 @@ def testimonial_rendering(user_details):
     font_scale = 3.2
     font_color = (255,255,255) 
     line_type = cv2.LINE_AA
+    height, width, _ = result.shape
+
+# Calculate coordinates based on image dimensions
+    x = int(width * 0.65)  # 10% from the left
+    yy = int(height * 0.77)  # 50% from the top
     wrapped_text=textwrap.wrap(text_values[1],width=55)
     for i,line in enumerate(wrapped_text):
           text_size_n=cv2.getTextSize(line,font,6,2)
@@ -229,7 +234,7 @@ def testimonial_rendering(user_details):
 
         #   x=int((result.shape[1]-text_size_n[0])/2)
           
-    cv2.putText(result,text_values[0],(x+2000,yy+2400),font,font_scale,(0,0,0),3,line_type)
+    cv2.putText(result,text_values[0],(x,yy),font,font_scale,(0,0,0),3,line_type)
     # Calculate the x-coordinate of the center of the text area
 #     text_area_center_x = int(text_area_x + text_area_w / 2)
 
