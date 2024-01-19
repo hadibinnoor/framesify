@@ -216,7 +216,7 @@ def testimonial_rendering(user_details):
 
     font = cv2.FONT_HERSHEY_SIMPLEX
     font_scale = 3
-    font_color = (0,0,0) 
+    font_color = (255,255,255) 
     line_type = cv2.LINE_AA
     height, width, _ = result.shape
 
