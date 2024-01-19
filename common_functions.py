@@ -215,26 +215,29 @@ def testimonial_rendering(user_details):
 #     text_area_x, text_area_y, text_area_w, text_area_h = cv2.boundingRect(text_area_contour)
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = 3.2
-    font_color = (255,255,255) 
+    font_scale = 3
+    font_color = (0,0,0) 
     line_type = cv2.LINE_AA
     height, width, _ = result.shape
 
 # Calculate coordinates based on image dimensions
-    x = int(width * 0.65)  # 10% from the left
-    yy = int(height * 0.77)  # 50% from the top
-    wrapped_text=textwrap.wrap(text_values[1],width=55)
+    x1 = int(width * 0.65)  # 10% from the left
+    y1 = int(height * 0.77)  # 50% from the top
+
+    x2= int(width * 0.1)
+    y2= int(height * 0.5)
+    wrapped_text=textwrap.wrap(text_values[2],width=55)
     for i,line in enumerate(wrapped_text):
           text_size_n=cv2.getTextSize(line,font,6,2)
           gap=text_size_n[1]+40
-          y=(1500+i*gap)+130
+          y=(y2+i*gap)+130
         #   x=int((result.shape[1]-text_size_n[0])/2)
-          cv2.putText(result, line, (310,y), font, font_scale, font_color, 4, line_type)
+          cv2.putText(result, line, (x2,y), font, font_scale, font_color, 4, line_type)
     
 
         #   x=int((result.shape[1]-text_size_n[0])/2)
           
-    cv2.putText(result,text_values[0],(x,yy),font,font_scale,(0,0,0),3,line_type)
+    cv2.putText(result,text_values[0],(x1,y1),font,font_scale,(0,0,0),3,line_type)
     # Calculate the x-coordinate of the center of the text area
 #     text_area_center_x = int(text_area_x + text_area_w / 2)
 
