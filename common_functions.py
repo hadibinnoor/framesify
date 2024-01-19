@@ -224,7 +224,7 @@ def testimonial_rendering(user_details):
     x1 = int(width * 0.65)  # 10% from the left
     y1 = int(height * 0.77)  # 50% from the top
 
-    x2= int(width * 0.1)
+    x2= int(width * 0.13)
     y2= int(height * 0.5)
     wrapped_text=textwrap.wrap(text_values[2],width=55)
     for i,line in enumerate(wrapped_text):
