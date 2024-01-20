@@ -166,7 +166,6 @@ def image_frame_rendering(user_details):
                 # Calculate the starting points for the text based on the center
                 text_position_1 = (center_x - int(text_size_1[0] / 2), center_y)
                 text_position_2 = (center_x - int(text_size_2[0] / 2), center_y + 50)
-                print(text_position_2)
                 # malayalam_font.putText(result, text_values[0], text_position_1, font, font_scale, font_color, 2, line_type)
                 # malayalam_font.putText(result, text_values[1], text_position_2, font, font_scale, font_color, 2, line_type)
                 # Assuming result is a Pillow Image object converted from the OpenCV result
