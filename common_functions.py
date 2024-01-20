@@ -1,6 +1,8 @@
 import mimetypes,requests,base64,cv2,numpy as np
 from flask import request,jsonify
 import textwrap
+from PIL import ImageFont,Image,ImageDraw
+
 
 def page_rendering(user_id,db):
       user_details=get_user_details(user_id,db)
@@ -136,34 +138,47 @@ def image_frame_rendering(user_details):
          else:
               text_values=[text_data]
         if text_field:
-                font = cv2.FONT_HERSHEY_DUPLEX
-                font_scale = 1.3
+
+                font_path = 'Manjari-Regular.ttf'
+                malayalam_font = ImageFont.truetype(font_path, size=40)
+                malayalam_font_1=ImageFont.truetype(font_path,size=27)
+                font=cv2.FONT_HERSHEY_SIMPLEX
+
+                font_scale = 1.9
                 font_color = (0,0,0)  # yellow color
                 line_type = 2
-                text_size, _ = cv2.getTextSize(text_data, font, font_scale, line_type)
+
+                text_size_1 = malayalam_font.getsize(text_values[0])
+                text_size_2 = malayalam_font_1.getsize(text_values[1])
+                # text_size, _ = cv2.getTextSize(text_data, font, font_scale, line_type)
 
     # Calculate the x-coordinate of the center of the text
  # Calculate the x-coordinate of the center of the text
                 # ... (previous code remains unchanged)
 
 # Calculate the x-coordinate of the center of the text
-                center_x = int(x + new_w / 2 + 520)
+                width,height,_=result.shape
+                center_x,center_y=int(width*0.347),int(height*1.10)
 
-                # Calculate the y-coordinate of the center of the text
-                center_y = int(y + new_h / 2)
 
-                # Calculate the x-coordinate of the starting point for each text
-                text_size_1, _ = cv2.getTextSize(text_values[0], font, font_scale, line_type)
-                text_start_x_1 = center_x - int(text_size_1[0] / 2)
-
-                text_size_2, _ = cv2.getTextSize(text_values[1], font, font_scale, line_type)
-                text_start_x_2 = center_x - int(text_size_2[0] / 2)
+                # Calculate the x-coordinate of the starting point for each tex
 
                 # Calculate the starting points for the text based on the center
-                text_position_1 = (text_start_x_1-95, center_y - 15)
-                text_position_2 = (text_start_x_2-95, center_y + 95)
-                cv2.putText(result, text_values[0], text_position_1, font, font_scale, font_color, 2, line_type)
-                cv2.putText(result, text_values[1], text_position_2, font, font_scale, font_color, 2, line_type)
+                text_position_1 = (center_x - int(text_size_1[0] / 2), center_y)
+                text_position_2 = (center_x - int(text_size_2[0] / 2), center_y + 50)
+                print(text_position_2)
+                # malayalam_font.putText(result, text_values[0], text_position_1, font, font_scale, font_color, 2, line_type)
+                # malayalam_font.putText(result, text_values[1], text_position_2, font, font_scale, font_color, 2, line_type)
+                # Assuming result is a Pillow Image object converted from the OpenCV result
+                result_pil = Image.fromarray(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
+                draw = ImageDraw.Draw(result_pil)
+
+                # Use malayalam_font to draw text on the image
+                draw.text(text_position_1, text_values[0], font=malayalam_font, fill=font_color)
+                draw.text(text_position_2, text_values[1], font=malayalam_font_1, fill=font_color)
+
+                # Convert the result back to OpenCV format
+                result = cv2.cvtColor(np.array(result_pil), cv2.COLOR_RGB2BGR)
 
 # ... (remaining code remains unchanged)
 
