@@ -1,7 +1,10 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from firebase_admin import credentials, firestore,initialize_app, storage
-from common_functions import get_user_details,image_frame_rendering,page_rendering,image_placing,testimonial_rendering
+from modules.image_handling import image_frame_rendering
+from modules.testimonial import testimonial_rendering
+from modules.page_rendering import page_rendering
+from modules.details_fetching import get_user_details
 import re,base64,uuid,datetime
 
 
