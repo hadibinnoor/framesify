@@ -14,7 +14,8 @@ def page_rendering(user_id,db):
                 "frame_image": display_frame_url,
                 "client_title": client_title,
                 "aspect_ratio":aspect_ratio_yellow,
-                "text_field":text_field
+                "text_field":text_field,
+
             })
       else:
         return jsonify(frame_image="Error")

@@ -76,70 +76,84 @@ def image_placing(user_details):
 
 def image_frame_rendering(user_details):
         placing_details=image_placing(user_details)
-        text_field=user_details['text']
-        contour_details=user_details['contour_details']
-        x=contour_details['x']
-        y=contour_details['y']
-        new_w=placing_details['new_w']
-        new_h=placing_details['new_h']
         result=placing_details['result']
-        text_data = (request.form.get('textData'))
-        if text_data!=None:
-         if len(text_field)>=2:
-                parts = text_data.split(',')
+        return text_placing(user_details,result)
+        
 
+def text_placing(user_details,image=''):
+        if image=='':
+                image=user_details['edit_frame']
+        text_field=user_details['text']
+        text_data = (request.form.get('textData'))
+        font_color=tuple(user_details['text_color'])
+        if text_data!=None:
+                text_coordinates=user_details['text_coordinates']
+                text_coordinates_array=[]
+                if len(text_field)>=2:
         # Create an array and append the parts
-                text_values = []
-                text_values.extend(parts)
-         else:
-              text_values=[text_data]
+                        parts = text_data.split(',')
+                        text_values = []
+                        text_values.extend(parts)
+                else:
+                        text_values=[text_data]
+                for field in text_field:
+                        text_coordinates_array.append(text_coordinates[field])
         if text_field:
                 current_dir = os.path.dirname(os.path.realpath(__file__))
                 font_path = os.path.join(current_dir,'../assets/fonts/Manjari-Regular.ttf')
                 malayalam_font = ImageFont.truetype(font_path, size=40)
-                malayalam_font_1=ImageFont.truetype(font_path,size=27)
                 
-                font_color = (0,0,0)  # yellow color
 
-                text_size_1 = malayalam_font.getsize(text_values[0])
-                text_size_2 = malayalam_font_1.getsize(text_values[1])
+                # text_size_1 = malayalam_font.getsize(text_values[0])
+                # text_size_2 = malayalam_font.getsize(text_values[1])
+                text_size=[]
+
+                array_length=len(text_values)
+                for i in range(array_length):
+                       text_size.append(malayalam_font.getsize(text_values[i]))
             
 
  
 
 # Calculate the x-coordinate of the center of the text
-                width,height,_=result.shape
-                center_x,center_y=int(width*0.347),int(height*1.10)
+                width,height,_=image.shape
+                # center_x,center_y=int(width*0.347),int(height*1.10)
 
+                x_coordinates=[]
+                y_coordinates=[]
+                for i in range(array_length):
+                        x_coordinates.append(int(text_coordinates_array[i][0]*width))
+                        y_coordinates.append(int(text_coordinates_array[i][1]*height))
+                
 
                 # Calculate the x-coordinate of the starting point for each tex
 
                 # Calculate the starting points for the text based on the center
-                text_position_1 = (center_x - int(text_size_1[0] / 2), center_y)
-                text_position_2 = (center_x - int(text_size_2[0] / 2), center_y + 50)
+                # text_position_1 = (center_x - int(text_size_1[0] / 2), center_y)
+                # text_position_2 = (center_x - int(text_size_2[0] / 2), center_y + 50)
+                text_positions=[]
+
+                for i in range(array_length):
+                       text_positions.append((x_coordinates[i]-int(text_size[i][0]/2), y_coordinates[i]))
                 
-                result_pil = Image.fromarray(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
+                result_pil = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
                 draw = ImageDraw.Draw(result_pil)
 
                 # Use malayalam_font to draw text on the image
-                draw.text(text_position_1, text_values[0], font=malayalam_font, fill=font_color)
-                draw.text(text_position_2, text_values[1], font=malayalam_font_1, fill=font_color)
+                # draw.text(text_position_1, text_values[0], font=malayalam_font, fill=font_color)
+                # draw.text(text_position_2, text_values[1], font=malayalam_font, fill=font_color)
 
+                for i in range(array_length):
+                        draw.text(text_positions[i],text_values[i], font=malayalam_font,fill=font_color)
                 # Convert the result back to OpenCV format
                 result = cv2.cvtColor(np.array(result_pil), cv2.COLOR_RGB2BGR)
+                retval, buffer = cv2.imencode('.jpg', result)
+                result_base64 = base64.b64encode(buffer).decode('utf-8')
+                file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
+                mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
 
-# ... (remaining code remains unchanged)
 
+                # Prepend the MIME type to the base64 encoded image data
+                result_base64_with_mime = f"{mime_type}{result_base64}"
                 
-            # Convert the resulting image to base64
-        retval, buffer = cv2.imencode('.jpg', result)
-        result_base64 = base64.b64encode(buffer).decode('utf-8')
-        file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
-        mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
-
-
-        # Prepend the MIME type to the base64 encoded image data
-        result_base64_with_mime = f"{mime_type}{result_base64}"
-        print(result_base64_with_mime[:30])
-            
-        return {'mime_image':result_base64_with_mime,'base64_image':result_base64}
+                return {'mime_image':result_base64_with_mime,'base64_image':result_base64}
