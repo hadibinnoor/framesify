@@ -80,8 +80,8 @@ def image_frame_rendering(user_details):
         return text_placing(user_details,result)
         
 
-def text_placing(user_details,image=''):
-        if image=='':
+def text_placing(user_details,image=None):
+        if image is None:
                 image=user_details['edit_frame']
         text_field=user_details['text']
         text_data = (request.form.get('textData'))
