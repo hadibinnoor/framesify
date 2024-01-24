@@ -77,7 +77,19 @@ def image_placing(user_details):
 def image_frame_rendering(user_details):
         placing_details=image_placing(user_details)
         result=placing_details['result']
-        return text_placing(user_details,result)
+        if user_details['text']:
+                return text_placing(user_details,result)
+        else:
+                retval, buffer = cv2.imencode('.jpg', result)
+                result_base64 = base64.b64encode(buffer).decode('utf-8')
+                file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
+                mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
+
+
+                # Prepend the MIME type to the base64 encoded image data
+                result_base64_with_mime = f"{mime_type}{result_base64}"
+                
+                return {'mime_image':result_base64_with_mime,'base64_image':result_base64}
         
 
 def text_placing(user_details,image=None):
