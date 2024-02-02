@@ -16,7 +16,17 @@ bucket = storage.bucket('framesify.appspot.com')
 
 
 app = Flask(__name__)
-CORS(app,resources={r"/campaign/*": {"origins": "*"},r"/testimonial/*": {"origins": "*"},r"/rates/*":{"origins":"*"}},methods=['POST'],allow_headers=["Access-Control-Allow-Origin"],origins="*")
+CORS(
+    app,
+    resources={
+        r"/campaign/*": {"origins": "*"},
+        r"/testimonial/*": {"origins": "*"},
+        r"/rates/*": {"origins": "*"}
+    },
+    methods=['POST'],
+    allow_headers=["Access-Control-Allow-Origin"]
+)
+
 @app.route('/campaign/<user_id>')
 
 def campaign(user_id):
