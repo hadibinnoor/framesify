@@ -30,5 +30,9 @@ def get_user_details(user_id,db):
                   text_color=user_data['text_color']
             else:
                   text_color=(0,0,0)
+            if 'text_size' in user_data.keys():
+                  text_size=user_data['text_size']
+            else:
+                  text_size=40
             client_title=user_data['user_title']
-            return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame,'text':text_field,'text_coordinates':text_coordinates,'text_color':text_color}
+            return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame,'text':text_field,'text_coordinates':text_coordinates,'text_color':text_color,'text_size':text_size}
