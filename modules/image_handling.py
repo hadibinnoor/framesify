@@ -112,7 +112,7 @@ def text_placing(user_details,image=None):
                         text_coordinates_array.append(text_coordinates[field])
         if text_field:
                 current_dir = os.path.dirname(os.path.realpath(__file__))
-                font_path = os.path.join(current_dir,'../assets/fonts/Manjari-Regular.ttf')
+                font_path = os.path.join(current_dir,'../assets/fonts/Manjari-Bold.ttf')
                 malayalam_font = ImageFont.truetype(font_path, size=user_details['text_size'])
                 
 
