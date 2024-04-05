@@ -6,7 +6,9 @@ def page_rendering(user_id,db):
       if user_details:
         display_frame_url=user_details['display_frame_url']
         client_title=user_details['client_title']
-        aspect_ratio_yellow=user_details['contour_details']['aspect_ratio_yellow']
+        aspect_ratio_yellow=None
+        if 'contour_details' in user_details.keys():
+          aspect_ratio_yellow=user_details['contour_details']['aspect_ratio_yellow']
         text_field=user_details['text']
 
         return jsonify({
