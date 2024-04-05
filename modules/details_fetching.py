@@ -24,8 +24,6 @@ def get_user_details(user_id,db):
                   text_field=user_data['text_field']
                   text_coordinates=user_data['text_coordinates']
             
-            if 'rate_poster' not in user_data.keys(): 
-                  contour_details=contour_id(edit_frame,color_lower_bound,color_upper_bound)
             if 'text_color' in user_data.keys():
                   text_color=user_data['text_color']
             else:
@@ -35,4 +33,7 @@ def get_user_details(user_id,db):
             else:
                   text_size=40
             client_title=user_data['user_title']
-            return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame,'text':text_field,'text_coordinates':text_coordinates,'text_color':text_color,'text_size':text_size}
+            if 'rate_poster' not in user_data.keys(): 
+                  contour_details=contour_id(edit_frame,color_lower_bound,color_upper_bound)
+                  return {'client_title':client_title,'contour_details':contour_details,'display_frame_url':display_frame_url,'edit_frame':edit_frame,'text':text_field,'text_coordinates':text_coordinates,'text_color':text_color,'text_size':text_size}
+            return {'client_title':client_title,'display_frame_url':display_frame_url,'edit_frame':edit_frame,'text':text_field,'text_coordinates':text_coordinates,'text_color':text_color,'text_size':text_size}
