@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from firebase_admin import credentials, firestore,initialize_app, storage
 from modules.image_handling import image_frame_rendering,text_placing
@@ -6,6 +6,8 @@ from modules.testimonial import testimonial_rendering
 from modules.page_rendering import page_rendering
 from modules.details_fetching import get_user_details
 import re,base64,uuid,datetime
+import http
+from modules.mmr import review_handler
 
 
 # Initialize Firebase Admin SDK
@@ -134,5 +136,12 @@ def daily_rate(user_id):
     else:
     # Handle the error accordingly, e.g., return an error response
         return jsonify({'error': 'Image processing failed'})   
+@app.route('/mmr/<string:user_id>',methods=['POST'])
+def makeMoreReviews(user_id):
+    if request.is_json:
+        data=request.get_json()
+        poster=review_handler(user_id,db,data)
+        return jsonify(poster['mime_image'])
+        
 if __name__ == '__main__':
     app.run(debug=True)
