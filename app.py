@@ -7,7 +7,7 @@ from modules.page_rendering import page_rendering
 from modules.details_fetching import get_user_details
 import re,base64,uuid,datetime
 import http
-from modules.mmr import review_handler
+from modules.reviews import review_handler
 
 
 # Initialize Firebase Admin SDK
@@ -136,12 +136,12 @@ def daily_rate(user_id):
     else:
     # Handle the error accordingly, e.g., return an error response
         return jsonify({'error': 'Image processing failed'})   
-@app.route('/mmr/<string:user_id>',methods=['POST'])
+@app.route('/reviews/<string:user_id>',methods=['POST'])
 def makeMoreReviews(user_id):
     if request.is_json:
         data=request.get_json()
         poster=review_handler(user_id,db,data)
-        return jsonify(poster['mime_image'])
+        return jsonify(poster)
         
 if __name__ == '__main__':
     app.run(debug=True)
