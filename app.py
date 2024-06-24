@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request,send_file
 from flask_cors import CORS
 from firebase_admin import credentials, firestore,initialize_app, storage
 from modules.image_handling import image_frame_rendering,text_placing
@@ -8,6 +8,8 @@ from modules.details_fetching import get_user_details
 import re,base64,uuid,datetime
 import http
 from modules.reviews import review_handler
+from io import BytesIO
+import requests
 
 
 # Initialize Firebase Admin SDK
@@ -18,7 +20,8 @@ bucket = storage.bucket('framesify.appspot.com')
 
 
 app = Flask(__name__)
-CORS(app,resources={r"/campaign/*": {"origins": "*"},r"/testimonial/*": {"origins": "*"},r"/rates/*":{"origins":"*"},r"/reviews/*":{"origins":"*"}},methods=['POST','GET'],allow_headers=["Access-Control-Allow-Origin"],origins="*")
+# CORS(app,resources={r"/campaign/*": {"origins": "*"},r"/testimonial/*": {"origins": "*"},r"/rates/*":{"origins":"*"},r"/reviews/*":{"origins":"*"}},methods=['POST','GET'],allow_headers=["Access-Control-Allow-Origin"],origins="*")
+CORS(app,origins=["http://localhost:5173","http://127.0.0.1:5173","https://framesify.com"])
 @app.route('/campaign/<user_id>')
 
 def campaign(user_id):
@@ -134,14 +137,36 @@ def daily_rate(user_id):
         return jsonify(image_details['mime_image'])
    
     else:
-    # Handle the error accordingly, e.g., return an error response
         return jsonify({'error': 'Image processing failed'})   
 @app.route('/reviews/<string:user_id>',methods=['POST'])
 def makeMoreReviews(user_id):
+    print(request.is_json)
     if request.is_json:
         data=request.get_json()
         poster=review_handler(user_id,db,data)
-        return jsonify(poster)
+
+        poster_data = {'status': poster.status_code, 'content': poster.data.decode('utf-8')}
+        poster_data['content'] = re.sub('data:image\/.+;base64,', '', poster_data['content'])
+        image_bytes = base64.b64decode(poster_data['content'])
+        user_id_fb = str(uuid.uuid4())
+        filename = f'{user_id_fb}.jpg'
+        blob = bucket.blob(filename)
+        blob.upload_from_string(image_bytes, content_type='image/jpeg')
+        expiration_time = datetime.timedelta(minutes=6000)
+        image_url = blob.generate_signed_url(expiration_time)
+        doc_ref = db.collection(f'users/{user_id}/user_images').document()
+        doc_ref.set({
+            'user_id': user_id_fb,
+            'image_url': image_url,
+        })
+        response = requests.get(image_url)
+        response.raise_for_status()
+        
+
+        image = BytesIO(response.content)
+
+
+        return send_file(image, mimetype='image/jpeg', as_attachment=True, download_name='review.jpg')
         
 if __name__ == '__main__':
     app.run(debug=True)

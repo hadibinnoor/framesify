@@ -37,10 +37,10 @@ def text_placing(user_details,data,image=None):
                 image=user_details['edit_frame']
         text_field=user_details['text']
         font_color=tuple(user_details['text_color'])
-        print(text_field)
+        data['rating']=str(data['rating'])
+        print(data)
         if data!=None:
                 text_coordinates=user_details['text_coordinates']
-                print(text_coordinates)
                 text_coordinates_dict={}
         # Create an array and append the parts
 
@@ -58,7 +58,11 @@ def text_placing(user_details,data,image=None):
 
                 array_length=len(data)
                 for key in data.keys():
-                       text_size[key]=malayalam_font.getsize(data[key])
+                        if isinstance(data[key], str):
+                            text_size[key] = malayalam_font.getsize(data[key])
+                        else:
+                                text_size[key] = (30, 30) 
+
             
 
  
@@ -89,10 +93,7 @@ def text_placing(user_details,data,image=None):
                 retval, buffer = cv2.imencode('.jpg', result)
                 result_base64 = base64.b64encode(buffer).decode('utf-8')
                 file_extension = mimetypes.guess_extension(mimetypes.types_map['.jpg'])
-                mime_type = f"data:image/{file_extension[1:]};base64,"  # Extracting the extension without '.'
-
-
-                # Prepend the MIME type to the base64 encoded image data
+                mime_type = f"data:image/{file_extension[1:]};base64,"  
                 result_base64_with_mime = f"{mime_type}{result_base64}"
                 
                 return {'mime_image':result_base64_with_mime}
